@@ -1,0 +1,14 @@
+/* Estilos generales */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Media query para pantallas pequeñas (ejemplo: menos de 768px de ancho) */
+@media (max-width: 768px) {
+  .app-layout {
+    /* Aquí puedes ajustar los estilos para pantallas pequeñas */
+    padding: 10px; /* Agrega un poco de padding */
+  }
+}
