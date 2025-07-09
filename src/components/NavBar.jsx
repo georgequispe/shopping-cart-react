@@ -1,11 +1,10 @@
-// src/components/Navbar.jsx
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { CartContext } from "../contexts/ShoppingCartContext";
 import { useAuthContext } from "../contexts/AuthContext";
 import { FaShoppingCart } from "react-icons/fa";
 import { Navbar, Nav, Container } from "react-bootstrap";
-import { StyledNavbar, StyledNavLink, CartCount } from "./styled/NavBarStyled";
+import { StyledNavbar, StyledNavLink, CartCount, BrandLogo } from "./styled/NavBarStyled";
 
 export const NavbarCustom = () => {
   const { user, admin } = useAuthContext();
@@ -16,7 +15,12 @@ export const NavbarCustom = () => {
     <StyledNavbar>
       <Navbar expand="lg" variant="dark">
         <Container>
-          <Navbar.Brand as={Link} to="/">Shoppicart</Navbar.Brand>
+          {/* 🥬 Logo personalizado + texto */}
+          <Navbar.Brand as={Link} to="/" style={{ display: "flex", alignItems: "center" }}>
+            <BrandLogo src="/logo.jpg" alt="Logo La Saludable" />
+            <span style={{ marginLeft: "8px", fontWeight: "bold" }}>La Saludable</span>
+          </Navbar.Brand>
+
           <Navbar.Toggle aria-controls="main-navbar" />
           <Navbar.Collapse id="main-navbar">
             <Nav className="me-auto">

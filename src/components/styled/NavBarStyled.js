@@ -1,4 +1,3 @@
-// src/components/styled/NavBarStyled.js
 import styled from "styled-components";
 import { Nav } from "react-bootstrap";
 
@@ -21,4 +20,11 @@ export const CartCount = styled.span`
   margin-left: 5px;
   font-weight: bold;
   color: #00ffcc;
+`;
+
+export const BrandLogo = styled.img`
+  width: 40px;
+  height: 40px;
+  vertical-align: middle;
+  border-radius: 6px;
 `;
