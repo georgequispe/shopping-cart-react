@@ -1,5 +1,5 @@
 import { Item } from "./components/Item";
-import { Navbar } from "./components/NavBar";
+import { NavbarCustom } from "./components/NavBar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ShoppingCart } from "./components/ShoppingCart";
 import { Home } from "./layouts/Home";
@@ -21,7 +21,7 @@ export const App = () => {
         display: "flex",
         flexDirection: "column"
       }}>
-        <Navbar />
+        <NavbarCustom />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/productos" element={<Item />} />
