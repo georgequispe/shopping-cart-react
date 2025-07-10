@@ -46,28 +46,17 @@ export function ProductosProvider({ children }) {
         });
     };
 
-    const obtenerProducto = (id) => {
-        return(
-            new Promise((res, rej) => {
-               fetch("https://681fe14e72e59f922ef75764.mockapi.io/productos")
-                .then((res) => res.json())
-                .then((datos) => {
-                    const productoEncontrado = datos.find((item) => item.id === id);
-                    if (productoEncontrado) {
-                    setProductoEncontrado(productoEncontrado);
-                    res(datos)
-                    } else {
-                        rej("Producto no encontrado")
-                    }
-                })
-                .catch((err) => {
-                    console.log("Error:", err);
-                    rej("Hubo un error al obtener el producto.");
-                }); 
-            })
-        )
-    }
-
+const obtenerProducto = async (id) => {
+  try {
+    const res = await fetch(`https://681fe14e72e59f922ef75764.mockapi.io/productos/${id}`);
+    if (!res.ok) throw new Error("Producto no encontrado");
+    const data = await res.json();
+    setProductoEncontrado(data);
+    return data;
+  } catch (err) {
+    throw new Error("Hubo un error al obtener el producto.");
+  }
+};
     const eliminarProducto = (id) => {
         return new Promise(async (res, rej) => {
           try {

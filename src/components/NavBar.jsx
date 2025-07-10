@@ -27,6 +27,7 @@ export const NavbarCustom = () => {
               <StyledNavLink as={Link} to="/">Inicio</StyledNavLink>
               <StyledNavLink as={Link} to="/productos">Productos</StyledNavLink>
               <StyledNavLink as={Link} to="/contacto">Contacto</StyledNavLink>
+              <StyledNavLink as={Link} to="/nosotros">Nosotros</StyledNavLink>
               <StyledNavLink as={Link} to="/login">Login</StyledNavLink>
               {admin && (
                 <>

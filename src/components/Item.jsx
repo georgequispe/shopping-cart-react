@@ -14,16 +14,10 @@ export const Item = () => {
   const [productosLocal, setProductosLocal] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(false);
-  //productos
-  const { obtenerProductos, filtrarProductos, productos } = useProductosContext();
+  const { obtenerProductos } = useProductosContext();
   const productosPorPagina = 10;
   const [paginaActual, setPaginaActual] = useState(1);
-    // Calcular el índice de los productos a mostrar en la página actual
-  const indiceUltimoProducto = paginaActual * productosPorPagina;
-  const indicePrimerProducto = indiceUltimoProducto - productosPorPagina;
   const [filtro, setFiltro] = useState("");
-//////////////////////////////
-//Paginacion////////////////////////
 
   useEffect(() => {
     obtenerProductos()
@@ -31,24 +25,30 @@ export const Item = () => {
         setProductosLocal(productosData);
         setCargando(false);
       })
-      .catch((error) => {
+      .catch(() => {
         setError("Hubo un problema al cargar los productos.");
         setCargando(false);
       });
   }, []);
 
-  function navegar(id) {
+  useEffect(() => {
+    setPaginaActual(1); // Reiniciar a la primera página si cambia el filtro
+  }, [filtro]);
+
+  const navegar = (id) => {
     navigate(`/productos/${id}`);
-  }
-// Aplica el filtro sobre productosLocal ANTES de paginar
-const productosFiltrados = productosLocal.filter(
-  (p) => (p.name || "").toLowerCase().includes(filtro.toLowerCase())
-);
-const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
-const productosActuales = productosFiltrados.slice(indicePrimerProducto, indiceUltimoProducto);
+  };
+
+  const productosFiltrados = productosLocal.filter((p) =>
+    (p.name || "").toLowerCase().includes(filtro.toLowerCase())
+  );
+
+  const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
+  const indiceUltimoProducto = paginaActual * productosPorPagina;
+  const indicePrimerProducto = indiceUltimoProducto - productosPorPagina;
+  const productosActuales = productosFiltrados.slice(indicePrimerProducto, indiceUltimoProducto);
 
   const cambiarPagina = (numeroPagina) => setPaginaActual(numeroPagina);
-
 
   const addToCart = (producto) => {
     const id = producto.id;
@@ -56,69 +56,39 @@ const productosActuales = productosFiltrados.slice(indicePrimerProducto, indiceU
       const isItemsFound = currItems.find((item) => item.id === id);
       if (isItemsFound) {
         return currItems.map((item) =>
-          item.id === id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+          item.id === id ? { ...item, quantity: item.quantity + 1 } : item
         );
       } else {
         return [...currItems, { ...producto, quantity: 1 }];
       }
     });
-    toast.success("Producto agregado al carrito", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
+    toast.success("Producto agregado al carrito", { autoClose: 3000 });
   };
 
-  const removeItem = (producto) => {
-    const id = producto;
-    const price = productosLocal.find((item) => item.id === id).price;
+  const removeItem = (productoId) => {
     setCart((currItems) => {
-      if (currItems.find((item) => item.id === id)?.quantity === 1) {
-        toast.info("Producto eliminado del carrito", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        return currItems.filter((item) => item.id !== id);
-      } else {
-        toast.info("Producto eliminado del carrito", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        return currItems.map((item) => {
-          if (item.id === id) {
-            return { ...item, quantity: item.quantity - 1 };
-          } else {
-            return item;
-          }
-        });
-      }
+      const item = currItems.find((i) => i.id === productoId);
+      if (!item) return currItems;
+
+      const updatedItems =
+        item.quantity === 1
+          ? currItems.filter((i) => i.id !== productoId)
+          : currItems.map((i) =>
+              i.id === productoId ? { ...i, quantity: i.quantity - 1 } : i
+            );
+
+      toast.info("Producto eliminado del carrito", { autoClose: 3000 });
+      return updatedItems;
     });
   };
 
-  const getQuantityById = (id) => {
-    return cart.find((item) => item.id === id)?.quantity || 0;
-  };
+  const getQuantityById = (id) =>
+    cart.find((item) => item.id === id)?.quantity || 0;
 
   if (cargando) {
-    return <div>Loading... </div>;
+    return <div>Cargando productos...</div>;
   } else if (error) {
-    return <div>No hay productos</div>;
+    return <div className="text-danger text-center">{error}</div>;
   } else {
     return (
       <div>
@@ -126,6 +96,7 @@ const productosActuales = productosFiltrados.slice(indicePrimerProducto, indiceU
           <title>Bienvenido | La Saludable</title>
           <meta name="description" content="Explora nuestra variedad de productos." />
         </Helmet>
+
         <input
           type="text"
           placeholder="Buscar productos..."
@@ -133,38 +104,52 @@ const productosActuales = productosFiltrados.slice(indicePrimerProducto, indiceU
           value={filtro}
           onChange={(e) => setFiltro(e.target.value)}
         />
-        <div className="item-list">
-          {productosActuales.map((producto) => (
-            <div key={producto.id} className="item-box">
-              {getQuantityById(producto.id) > 0 && (
-                <div className="item-quantity">{getQuantityById(producto.id)}</div>
-              )}
-              <div>{producto.name}</div>
-              <img src={producto.imagen} alt={producto.name} />
-              <div className="item-info">
-                ${producto.price} x kg
+
+        {productosActuales.length === 0 ? (
+          <p className="text-muted text-center">No se encontraron productos.</p>
+        ) : (
+          <div className="item-list">
+            {productosActuales.map((producto) => (
+              <div key={producto.id} className="item-box">
+                {getQuantityById(producto.id) > 0 && (
+                  <div className="item-quantity">{getQuantityById(producto.id)}</div>
+                )}
+                <div>{producto.name}</div>
+                <img src={producto.imagen} alt={producto.name} />
+                <div className="item-info">
+                  ${producto.price} x kg
+                </div>
+                {getQuantityById(producto.id) === 0 ? (
+                  <button className="item-add-button" onClick={() => addToCart(producto)}>
+                    + Añadir al carrito
+                  </button>
+                ) : (
+                  <button className="item-plus-button" onClick={() => addToCart(producto)}>
+                    + agregar más
+                  </button>
+                )}
+                <button className="item-detail-button" onClick={() => navegar(producto.id)}>
+                  Ver detalle
+                </button>
+                {getQuantityById(producto.id) > 0 && (
+                  <button className="item-minus-button" onClick={() => removeItem(producto.id)}>
+                    restar producto
+                  </button>
+                )}
               </div>
-              {getQuantityById(producto.id) === 0 ? (
-                <button className="item-add-button" onClick={() => addToCart(producto)}>
-                  + Añadir al carrito
-                </button>
-              ) : (
-                <button className="item-plus-button" onClick={() => addToCart(producto)}>
-                  + agregar mas
-                </button>
-              )}
-              <button className="item-detail-button" onClick={() => navegar(producto.id)}>
-                Ver detalle
-              </button>
-              {getQuantityById(producto.id) > 0 && (
-                <button className="item-minus-button" onClick={() => removeItem(producto.id)}>
-                  restar producto
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="d-flex justify-content-center my-4">
+            ))}
+          </div>
+        )}
+
+        <div className="d-flex justify-content-center my-4 flex-wrap">
+          <button
+            className="btn btn-outline-secondary mx-1"
+            onClick={() => cambiarPagina(paginaActual - 1)}
+            disabled={paginaActual === 1}
+          >
+            Anterior
+          </button>
+
           {Array.from({ length: totalPaginas }, (_, index) => (
             <button
               key={index + 1}
@@ -174,7 +159,16 @@ const productosActuales = productosFiltrados.slice(indicePrimerProducto, indiceU
               {index + 1}
             </button>
           ))}
+
+          <button
+            className="btn btn-outline-secondary mx-1"
+            onClick={() => cambiarPagina(paginaActual + 1)}
+            disabled={paginaActual === totalPaginas}
+          >
+            Siguiente
+          </button>
         </div>
+
         <ToastContainer />
       </div>
     );
